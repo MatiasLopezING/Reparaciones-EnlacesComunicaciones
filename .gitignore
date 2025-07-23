@@ -1,9 +1,4 @@
-# ----------------------------------------
-# Archivos de bases de datos SQLite
-*.db
-*.sqlite
-
-# ----------------------------------------
+# .gitignore
 # Archivos de configuración sensibles
 .env
 
