@@ -1,0 +1,40 @@
+body {
+  background-color: #f8f9fa; /* gris clarito */
+  color: #212529;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h1, h2 {
+  color: #004080;
+}
+
+.btn-primary {
+  background-color: #004080;
+  border-color: #004080;
+}
+
+.btn-primary:hover {
+  background-color: #003060;
+}
+
+.table-dark {
+  background-color: #004080;
+  color: white;
+}
+
+.alert-success {
+  background-color: #004080;
+  color: white;
+  border-color: #003060;
+}
+
+.alert-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.alert-danger {
+  background-color: #c8102e;
+  color: white;
+  border-color: #a40e26;
+}

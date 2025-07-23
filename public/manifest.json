@@ -1,0 +1,30 @@
+{
+  "name": "Enlaces Comunicaciones - Gestión de Reparaciones",
+  "short_name": "Enlaces Reparaciones",
+  "description": "Sistema de gestión de pedidos de reparación para Enlaces Comunicaciones",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#004080",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "icons/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "img/logo_enlaces-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
