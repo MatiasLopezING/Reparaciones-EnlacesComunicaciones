@@ -87,12 +87,12 @@ NODE_ENV=production
 ![Formulario](screenshots/formulario.PNG)
 *Interfaz intuitiva para crear nuevas órdenes de reparación*
 
-### 📋 Vista de Orden Individual
-![Orden](screenshots/orden_de_reparacion.PNG)
-*Detalle completo de una orden con estados y acciones*
+### 📋 Tabla de Gestión Técnica
+![Tabla Técnico](screenshots/tecnico_tabla.PNG)
+*Vista completa de todas las órdenes con estados y acciones*
 
 ### 📊 Exportación de Reportes
-![Excel](screenshots/export_excel.PNG)
+![Excel Captura](screenshots/exel_captura.PNG)
 *Descarga de reportes completos en formato Excel*
 
 ---
