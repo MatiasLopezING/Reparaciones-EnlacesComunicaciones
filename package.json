@@ -1,17 +1,33 @@
 {
-  "name": "mi-web-reparaciones",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "sistema-reparaciones-enlaces",
+  "version": "2.0.0",
+  "description": "Sistema web seguro para gestión de órdenes de reparación con autenticación JWT y PostgreSQL",
+  "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "verify-db": "node server/verify-db.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "reparaciones",
+    "gestion",
+    "postgresql",
+    "jwt",
+    "express",
+    "enlaces-comunicaciones"
+  ],
+  "author": "Enlaces Comunicaciones",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "sqlite3": "^5.1.7"
+    "dotenv": "^17.2.0",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3"
   }
 }

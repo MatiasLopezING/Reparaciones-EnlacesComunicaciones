@@ -1,95 +1,162 @@
-# Enlaces Comunicaciones - Sistema de Gestión de Reparaciones
+# 🔧 Enlaces Comunicaciones - Sistema de Gestión de Reparaciones
 
 ![Logo Enlaces](public/img/logo_enlaces-192.png)
 
-**Sistema Web para registrar, consultar y administrar pedidos de reparación en el taller de Enlaces Comunicaciones.**
+**Sistema Web Profesional para gestionar órdenes de reparación con autenticación JWT, base de datos PostgreSQL y seguridad avanzada.**
+
+[![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7)](https://render.com)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/Node.js-≥14.0.0-green.svg)](https://nodejs.org)
 
 ---
 
-## 💻 Tecnologías Utilizadas
+## 🌟 Características Principales
 
-* **Frontend**: HTML + JavaScript + Bootstrap 5 + Bootstrap Icons
-* **Backend**: Node.js con Express
-* **Base de datos**: SQLite3 (local)
-* **Exportación**: Exporta pedidos a Excel con SheetJS
-* **PWA**: Progressive Web App con `manifest.json` y `favicon` compatible
-
----
-
-## 🔄 Características
-
-* Registro rápido de nuevos pedidos con validación
-* Buscador en vivo por cliente o equipo
-* Lista con tabla responsive y ordenada
-* Estados: pendiente o reparado, editable con un botón
-* Posibilidad de cargar costo estimado y nota técnica
-* Alertas visuales y limpias por Bootstrap
-* Exportación a Excel con un clic
-* Iconos y diseño adaptado al logo y colores institucionales
+- **🔐 Autenticación JWT** - Login seguro con token persistente
+- **📱 Responsive Design** - Compatible con móviles y tablets  
+- **🚀 Sistema de Estados** - Flujo simple: Pendiente → Reparado → Retirado
+- **💰 Gestión de Costos** - Modal para registrar costo final y notas técnicas
+- **🔍 Búsqueda en Tiempo Real** - Filtra por cliente, equipo, teléfono, etc.
+- **📊 Exportación Excel** - Descarga reportes completos con un clic
+- **🛡️ Seguridad Avanzada** - Rate limiting, CSP, headers seguros
+- **☁️ Base de Datos Cloud** - PostgreSQL en Neon (sin SQLite local)
 
 ---
 
-## 🌐 Capturas recomendadas
+## 💻 Tecnologías
 
-Colocá estas 3 capturas en una carpeta `/screenshots` y luego referencialas en el README:
+### Frontend
+- **HTML5 + CSS3** con Bootstrap 5.3.3
+- **JavaScript ES6+** vanilla (sin frameworks)
+- **Bootstrap Icons** 1.10.5
+- **PWA Ready** con manifest.json
 
-1. **Formulario de carga de pedido**
-2. **Tabla con varios pedidos cargados**
-3. **Descarga de Excel activa con SheetJS**
+### Backend  
+- **Node.js** con Express 4.18.2
+- **JWT** para autenticación
+- **Helmet** para headers de seguridad
+- **Rate Limiting** anti-brute force
+- **CORS** configurado
 
-Agregalas así:
+### Base de Datos
+- **PostgreSQL** en Neon Cloud
+- **Migrations** automáticas al iniciar
+- **Conexión SSL** para producción
 
+---
 
-### Formulario de pedidos
-![Formulario](screenshots/formulario.PNG)
+## 🚀 Deploy en Render
 
-### Tabla de pedidos cargados
-![Tabla](screenshots/tabla.PNG)
+### Variables de Entorno Requeridas
 
-### Exportación a Excel
-![Excel](screenshots/export_excel.PNG)
+Configura estas variables en Render:
+
+```bash
+# Base de datos (Neon PostgreSQL)
+DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require
+
+# Autenticación
+JWT_SECRET=tu_jwt_secret_super_seguro
+ADMIN_USER=admin
+ADMIN_PASSWORD=tu_password_segura
+
+# Servidor
+PORT=3000
+NODE_ENV=production
 ```
 
+### Configuración en Render
 
+1. **Conecta tu repositorio GitHub**
+2. **Configura el servicio:**
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+   - Node Version: 18.x
+3. **Agrega las variables de entorno**
+4. **Deploy automático** ✅
 
-## ⚡ Instalación y uso local
+---
 
-### 1. Clonar el repositorio
+## 📱 Capturas de Pantalla
+
+### Formulario de Órdenes
+![Formulario](screenshots/formulario.PNG)
+
+### Tabla de Gestión
+![Tabla](screenshots/tabla.PNG)
+
+### Exportación Excel
+![Excel](screenshots/export_excel.PNG)
+
+---
+
+## ⚡ Instalación Local
+
+### 1. Clonar repositorio
 
 ```bash
 git clone https://github.com/MatiasLopezING/Reparaciones-EnlacesComunicaciones.git
 cd Reparaciones-EnlacesComunicaciones
 ```
 
-### 2. Instalar dependencias del backend
+### 2. Instalar dependencias
 
 ```bash
-cd server
 npm install
 ```
 
-### 3. Crear base de datos local (se genera automáticamente al iniciar)
+### 3. Configurar variables de entorno
 
-### 4. Ejecutar el servidor
+Crea un archivo `.env`:
 
 ```bash
-node server.js
+# Base de datos PostgreSQL (Neon)
+DATABASE_URL=tu_connection_string_postgresql
+
+# JWT y autenticación  
+JWT_SECRET=tu_jwt_secret
+ADMIN_USER=admin
+ADMIN_PASSWORD=tu_password
+
+# Puerto (opcional)
+PORT=3000
 ```
 
-### 5. Acceder desde navegador
+### 4. Iniciar servidor
+
+```bash
+npm run dev
+# o en producción
+npm start
+```
+
+### 5. Acceder a la aplicación
 
 ```
-http://localhost:3000
+http://localhost:3000/login.html
 ```
+
+**Credenciales por defecto:**
+- Usuario: `admin`
+- Contraseña: `enlaces2025`
 
 ---
 
-## ✉ .gitignore
+## 🎯 Flujo de Trabajo
 
-Este proyecto incluye un `.gitignore` para evitar subir:
+### 1. **Crear Orden** 🟡
+- Cliente, equipo, descripción de falla
+- Teléfono y/o email
+- Estado: **Pendiente** (amarillo)
 
-* La base de datos (`/database/pedidos.db`)
-* Archivos temporales y de sistema
+### 2. **Completar Reparación** 🟢  
+- Botón "Reparado" abre modal
+- Registrar costo final y nota técnica
+- Estado: **Reparado** (verde)
+
+### 3. **Marcar como Retirado** 🔵
+- Cliente retira el equipo
+- Estado: **Retirado** (celeste)
 
 ---
 
@@ -97,28 +164,85 @@ Este proyecto incluye un `.gitignore` para evitar subir:
 
 ```
 mi-web-reparaciones/
-├── public/           # Archivos frontend
-├── server/           # Servidor Express
-├── database/         # Contiene pedidos.db (ignorado)
-├── manifest.json     # Configuración PWA
-├── .gitignore
-└── README.md
+├── public/              # Frontend estático
+│   ├── index.html       # Página principal
+│   ├── login.html       # Página de login
+│   ├── script.js        # Lógica frontend
+│   ├── style.css        # Estilos personalizados
+│   ├── icons/           # Favicons PWA
+│   └── img/             # Imágenes y logos
+├── server/              # Backend Express
+│   ├── server.js        # Servidor principal
+│   ├── db.js            # Conexión PostgreSQL
+│   └── verify-db.js     # Verificador de BD
+├── screenshots/         # Capturas para README
+├── package.json         # Dependencias y scripts
+├── .env.example         # Ejemplo de variables
+├── .gitignore          # Archivos ignorados
+└── README.md           # Documentación
 ```
 
 ---
 
-## 🚀 PWA Ready
+## � Scripts Disponibles
 
-Compatible con instalación en celulares Android desde navegador Chrome gracias al `manifest.json` y los `icons` configurados.
-
----
-
-## ✍ Autor
-
-**Matías López**
-Ingeniería en Computación, UNLP
-Proyecto personal para Enlaces Comunicaciones
+```bash
+npm start       # Producción
+npm run dev     # Desarrollo  
+npm run verify-db   # Verificar base de datos
+```
 
 ---
 
-> Si te sirvió este proyecto o querés contribuir, sentite libre de abrir un issue o forkearlo.
+## 🛡️ Seguridad Implementada
+
+- ✅ **JWT Authentication** con expiración 24h
+- ✅ **Rate Limiting** 5 intentos de login por IP
+- ✅ **Content Security Policy** configurado
+- ✅ **Headers de seguridad** con Helmet
+- ✅ **Validación de inputs** en frontend y backend
+- ✅ **Conexión SSL** a base de datos
+- ✅ **Variables de entorno** para secrets
+
+---
+
+## 🌍 Demo en Vivo
+
+🔗 **[Ver Demo](https://tu-app.onrender.com)**
+
+**Credenciales de prueba:**
+- Usuario: `admin` 
+- Contraseña: `enlaces2025`
+
+---
+
+## 📝 Licencia
+
+Este proyecto está bajo la licencia **MIT**. Ver [LICENSE](LICENSE) para más detalles.
+
+---
+
+## ✍️ Autor
+
+**Matías López**  
+🎓 Ingeniería en Computación, UNLP  
+🏢 Enlaces Comunicaciones  
+📧 [Contacto](mailto:tu@email.com)
+
+---
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+---
+
+## ⭐ Dale una estrella
+
+¿Te gustó el proyecto? ¡Dale una estrella en GitHub!
+
+[![GitHub stars](https://img.shields.io/github/stars/MatiasLopezING/Reparaciones-EnlacesComunicaciones.svg?style=social&label=Star)](https://github.com/MatiasLopezING/Reparaciones-EnlacesComunicaciones)

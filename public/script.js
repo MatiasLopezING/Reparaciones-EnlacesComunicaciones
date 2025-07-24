@@ -1,115 +1,424 @@
-const form = document.getElementById('pedidoForm');
-const tbody = document.querySelector('#pedidos tbody');
+/**
+ * Sistema de Gestión de Reparaciones - Frontend
+ * JavaScript para la interfaz de usuario
+ * 
+ * @author Enlaces Comunicaciones
+ * @version 2.0.0
+ */
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(form));
-  if (!data.telefono && !data.mail) {
-    mostrarAlerta("Ingresá al menos teléfono o mail", "warning");
-  return;
+// ==========================================
+// CONFIGURACIÓN Y UTILIDADES
+// ==========================================
+
+/**
+ * Configuración de la aplicación
+ */
+const CONFIG = {
+  API_BASE_URL: '/api',
+  TOKEN_KEY: 'authToken',
+  USER_KEY: 'userInfo',
+  TIMEZONE: 'America/Argentina/Buenos_Aires'
+};
+
+/**
+ * Verificar autenticación al cargar la página
+ */
+function verificarAuth() {
+  const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+  if (!token) {
+    window.location.href = '/login.html';
+    return false;
+  }
+  return true;
 }
-  await fetch('/api/pedidos', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-    mostrarAlerta('Pedido guardado correctamente', 'success');
-  form.reset();
-  cargarPedidos();
-  document.getElementById('buscador').addEventListener('input', filtrarPedidos);
 
-});
+/**
+ * Obtener headers con autenticación
+ */
+function getAuthHeaders() {
+  const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+}
 
+/**
+ * Manejar errores de autenticación
+ */
+function handleAuthError(response) {
+  if (response.status === 403 || response.status === 401) {
+    localStorage.removeItem(CONFIG.TOKEN_KEY);
+    localStorage.removeItem(CONFIG.USER_KEY);
+    window.location.href = '/login.html';
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Formatear fecha para Argentina
+ */
+function formatearFecha(fechaString) {
+  if (!fechaString) return '-';
+  
+  try {
+    const fecha = new Date(fechaString);
+    return fecha.toLocaleDateString('es-AR', {
+      timeZone: CONFIG.TIMEZONE,
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric'
+    });
+  } catch (error) {
+    return '-';
+  }
+}
+
+/**
+ * Obtener fecha actual en formato argentino
+ */
+function fechaActualArgentina() {
+  return new Date().toLocaleDateString('es-AR', {
+    timeZone: CONFIG.TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).split('/').reverse().join('-');
+}
+
+/**
+ * Mostrar alerta con Bootstrap
+ */
+function mostrarAlerta(mensaje, tipo = 'info') {
+  const alertContainer = document.getElementById('alertContainer') || document.body;
+  const alertId = `alert-${Date.now()}`;
+  
+  const alertHTML = `
+    <div id="${alertId}" class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+      ${mensaje}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  `;
+  
+  alertContainer.insertAdjacentHTML('afterbegin', alertHTML);
+  
+  // Auto-remover después de 5 segundos
+  setTimeout(() => {
+    const alertElement = document.getElementById(alertId);
+    if (alertElement) {
+      alertElement.remove();
+    }
+  }, 5000);
+}
+
+// ==========================================
+// GESTIÓN DE USUARIO
+// ==========================================
+
+/**
+ * Mostrar información del usuario logueado
+ */
+function mostrarInfoUsuario() {
+  const userInfo = localStorage.getItem(CONFIG.USER_KEY);
+  const userInfoElement = document.getElementById('userInfo');
+  
+  if (userInfo && userInfoElement) {
+    const user = JSON.parse(userInfo);
+    userInfoElement.textContent = `Bienvenido, ${user.username}`;
+  }
+}
+
+/**
+ * Cerrar sesión
+ */
+function cerrarSesion() {
+  if (confirm('¿Estás seguro que querés cerrar sesión?')) {
+    localStorage.removeItem(CONFIG.TOKEN_KEY);
+    localStorage.removeItem(CONFIG.USER_KEY);
+    window.location.href = '/login.html';
+  }
+}
+
+// ==========================================
+// GESTIÓN DE PEDIDOS
+// ==========================================
+
+/**
+ * Cargar y mostrar pedidos
+ */
 async function cargarPedidos() {
-  const res = await fetch('/api/pedidos');
-  const pedidos = await res.json();
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/pedidos`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (handleAuthError(response)) return;
+    
+    if (!response.ok) {
+      throw new Error('Error al cargar pedidos');
+    }
+    
+    const pedidos = await response.json();
+    cargarTabla(pedidos);
+  } catch (error) {
+    mostrarAlerta('Error al cargar las órdenes: ' + error.message, 'danger');
+  }
+}
+
+/**
+ * Cargar datos en la tabla
+ */
+function cargarTabla(pedidos) {
+  const tbody = document.querySelector('#pedidos tbody');
+  if (!tbody) return;
+  
   tbody.innerHTML = '';
-  pedidos.forEach(p => {
+  
+  if (pedidos.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center text-muted">
+          No hay órdenes registradas
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  pedidos.forEach(pedido => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${p.id}</td>
-      <td>${p.cliente}</td>
-      <td>${p.equipo}</td>
-      <td>${p.telefono || '-'}</td>
-      <td>${p.mail || '-'}</td>
+      <td>${pedido.id}</td>
+      <td>${pedido.cliente || '-'}</td>
+      <td>${pedido.equipo || '-'}</td>
+      <td>${pedido.telefono || '-'}</td>
+      <td>${pedido.mail || '-'}</td>
       <td>
-        <span class="badge ${p.estado === 'reparado' ? 'bg-success' : 'bg-warning text-dark'}">
-        ${p.estado}
+        <span class="badge bg-${getEstadoBadgeColor(pedido.estado)}">
+          ${pedido.estado || 'pendiente'}
         </span>
       </td>
-      <td>${p.costo_estimado || '-'}</td>
-      <td>${p.nota_tecnica || '-'}</td>
-      <td>${p.accesorios || '-'}</td>
-      <td>
-        <button class="btn btn-success btn-sm me-1" onclick="marcarReparado(${p.id})" title="Marcar como reparado">
-            <i class="bi bi-check-circle"></i>
-        </button>
-        <button class="btn btn-danger btn-sm" onclick="eliminarPedido(${p.id})" title="Eliminar pedido">
-            <i class="bi bi-trash"></i>
-        </button>
-    </td>
+      <td>$${pedido.costo_estimado || '0'}</td>
+      <td class="text-center">
+        ${generateActionButtons(pedido)}
+      </td>
+      <td>${formatearFecha(pedido.fecha_ingreso)}</td>
+      <td>${formatearFecha(pedido.fecha_reparado)}</td>
+      <td>${formatearFecha(pedido.fecha_retiro)}</td>
     `;
     tbody.appendChild(row);
   });
 }
 
-async function eliminarPedido(id) {
-  const confirmar = confirm("¿Estás seguro de que querés eliminar este pedido?");
-  if (!confirmar) return;
-
-  await fetch(`/api/pedidos/${id}`, {
-    method: 'DELETE'
-  });
-    mostrarAlerta('Pedido eliminado correctamente', 'danger');
-  cargarPedidos();
+/**
+ * Obtener color del badge según el estado
+ */
+function getEstadoBadgeColor(estado) {
+  const colors = {
+    'pendiente': 'warning',     // 🟡 Amarillo
+    'reparado': 'success',      // 🟢 Verde
+    'retirado': 'info'          // 🔵 Celeste (finalizado)
+  };
+  return colors[estado] || 'secondary';
 }
 
-function mostrarAlerta(mensaje, tipo = 'success') {
-  const alertDiv = document.createElement('div');
-  alertDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
-  alertDiv.role = 'alert';
-  alertDiv.innerHTML = `
-    ${mensaje}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+/**
+ * Generar botones de acción según el estado
+ */
+function generateActionButtons(pedido) {
+  let buttons = '';
+  
+  // Solo mostrar botón "Reparado" si está pendiente
+  if (pedido.estado === 'pendiente') {
+    buttons += `
+      <button class="btn btn-success btn-sm me-1" onclick="marcarReparado(${pedido.id})" title="Completar reparación">
+        <i class="bi bi-check-circle-fill me-1"></i>Reparado
+      </button>
+    `;
+  }
+  
+  // Botón "Retirar" si está reparado
+  if (pedido.estado === 'reparado') {
+    buttons += `
+      <button class="btn btn-info btn-sm me-1" onclick="marcarRetirado(${pedido.id})" title="Marcar como retirado">
+        <i class="bi bi-box-arrow-up me-1"></i>Retirar
+      </button>
+    `;
+  }
+  
+  // Botón de eliminar siempre disponible
+  buttons += `
+    <button class="btn btn-outline-danger btn-sm" onclick="eliminarPedido(${pedido.id})" title="Eliminar pedido">
+      <i class="bi bi-trash"></i>
+    </button>
   `;
-  document.getElementById('alertContainer').appendChild(alertDiv);
-  setTimeout(() => alertDiv.remove(), 4000);
+  
+  return buttons;
 }
 
+/**
+ * Marcar pedido como reparado - Abre modal para completar datos
+ */
+function marcarReparado(id) {
+  // Guardar el ID en el campo oculto del modal
+  document.getElementById('pedidoIdReparado').value = id;
+  
+  // Limpiar los campos del formulario
+  document.getElementById('costoFinal').value = '';
+  document.getElementById('notaTecnica').value = '';
+  
+  // Mostrar el modal
+  const modal = new bootstrap.Modal(document.getElementById('modalReparado'));
+  modal.show();
+}
 
-async function marcarReparado(id) {
-  const costo = prompt("Costo estimado:");
-  const nota = prompt("Nota técnica (opcional):");
-  await fetch(`/api/pedidos/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ estado: 'reparado', costo_estimado: parseFloat(costo), nota_tecnica: nota }),
+/**
+ * Confirmar y procesar la reparación con los datos del modal
+ */
+async function confirmarReparado() {
+  const id = document.getElementById('pedidoIdReparado').value;
+  const costoFinal = document.getElementById('costoFinal').value;
+  const notaTecnica = document.getElementById('notaTecnica').value;
+  
+  // Validar campos requeridos
+  if (!costoFinal || !notaTecnica) {
+    mostrarToast('Por favor complete todos los campos', 'warning');
+    return;
+  }
+  
+  try {
+    // Actualizar el pedido con los datos de reparación
+    await actualizarEstadoPedido(id, 'reparado', {
+      fecha_reparado: fechaActualArgentina(),
+      costo_estimado: parseFloat(costoFinal),
+      nota_tecnica: notaTecnica
+    });
+    
+    // Cerrar el modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalReparado'));
+    modal.hide();
+    
+    mostrarToast('Equipo marcado como reparado exitosamente', 'success');
+  } catch (error) {
+    console.error('Error al marcar como reparado:', error);
+    mostrarToast('Error al procesar la reparación', 'error');
+  }
+}
+
+/**
+ * Marcar pedido como retirado
+ */
+async function marcarRetirado(id) {
+  await actualizarEstadoPedido(id, 'retirado', {
+    fecha_retiro: fechaActualArgentina()
   });
-    mostrarAlerta('Pedido marcado como reparado', 'info');
-  cargarPedidos();
 }
 
-function autoFecha() {
-  const hoy = new Date().toISOString().split('T')[0];
-  document.getElementById('fechaInput').value = hoy;
+/**
+ * Actualizar estado de pedido
+ */
+async function actualizarEstadoPedido(id, nuevoEstado, camposAdicionales = {}) {
+  try {
+    const body = {
+      estado: nuevoEstado,
+      ...camposAdicionales
+    };
+    
+    const response = await fetch(`${CONFIG.API_BASE_URL}/pedidos/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
+    
+    if (handleAuthError(response)) return;
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error en el servidor');
+    }
+    
+    mostrarAlerta(`Orden marcada como ${nuevoEstado}`, 'success');
+    cargarPedidos();
+  } catch (error) {
+    mostrarAlerta(`Error al actualizar: ${error.message}`, 'danger');
+  }
 }
 
-function filtrarPedidos() {
-  const texto = document.getElementById('buscador').value.toLowerCase();
-  const filas = tbody.querySelectorAll('tr');
-
-  filas.forEach(fila => {
-    const cliente = fila.children[1].textContent.toLowerCase();
-    const equipo = fila.children[2].textContent.toLowerCase();
-    const coincide = cliente.includes(texto) || equipo.includes(texto);
-    fila.style.display = coincide ? '' : 'none';
-  });
+/**
+ * Eliminar pedido
+ */
+async function eliminarPedido(id) {
+  if (!confirm("¿Estás seguro de que querés eliminar esta orden?")) return;
+  
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/pedidos/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    
+    if (handleAuthError(response)) return;
+    
+    if (!response.ok) {
+      throw new Error('Error al eliminar pedido');
+    }
+    
+    mostrarAlerta('Orden eliminada exitosamente', 'success');
+    cargarPedidos();
+  } catch (error) {
+    mostrarAlerta('Error al eliminar: ' + error.message, 'danger');
+  }
 }
 
+/**
+ * Buscar pedidos
+ */
+async function buscarPedidos() {
+  const searchInput = document.getElementById('search');
+  if (!searchInput) return;
+  
+  const term = searchInput.value.trim();
+  const url = term 
+    ? `${CONFIG.API_BASE_URL}/buscar?term=${encodeURIComponent(term)}`
+    : `${CONFIG.API_BASE_URL}/pedidos`;
+  
+  try {
+    const response = await fetch(url, {
+      headers: getAuthHeaders()
+    });
+    
+    if (handleAuthError(response)) return;
+    
+    if (!response.ok) {
+      throw new Error('Error en la búsqueda');
+    }
+    
+    const pedidos = await response.json();
+    cargarTabla(pedidos);
+  } catch (error) {
+    mostrarAlerta('Error al buscar: ' + error.message, 'danger');
+  }
+}
+
+/**
+ * Exportar a Excel
+ */
 function exportarExcel() {
-  fetch('/api/pedidos')
-    .then(res => res.json())
+  if (typeof XLSX === 'undefined') {
+    mostrarAlerta('Error: Librería XLSX no cargada', 'danger');
+    return;
+  }
+  
+  fetch(`${CONFIG.API_BASE_URL}/pedidos`, {
+    headers: getAuthHeaders()
+  })
+    .then(res => {
+      if (handleAuthError(res)) return;
+      return res.json();
+    })
     .then(data => {
+      if (!data) return;
+      
       const worksheet = XLSX.utils.json_to_sheet(data.map(p => ({
         ID: p.id,
         Cliente: p.cliente,
@@ -120,15 +429,103 @@ function exportarExcel() {
         Costo: p.costo_estimado,
         Nota_Técnica: p.nota_tecnica,
         Accesorios: p.accesorios,
-        Fecha: p.fecha_ingreso
+        Fecha_Ingreso: formatearFecha(p.fecha_ingreso),
+        Fecha_Reparado: formatearFecha(p.fecha_reparado),
+        Fecha_Retiro: formatearFecha(p.fecha_retiro)
       })));
+      
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos");
-      XLSX.writeFile(workbook, "pedidos.xlsx");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Ordenes_Reparacion");
+      
+      const fileName = `ordenes_reparacion_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+      
+      mostrarAlerta('Archivo Excel generado exitosamente', 'success');
+    })
+    .catch(error => {
+      mostrarAlerta('Error al exportar: ' + error.message, 'danger');
     });
 }
 
+// ==========================================
+// INICIALIZACIÓN
+// ==========================================
 
+/**
+ * Inicializar la aplicación
+ */
+function inicializarApp() {
+  // Verificar autenticación
+  if (!verificarAuth()) return;
+  
+  // Mostrar información del usuario
+  mostrarInfoUsuario();
+  
+  // Configurar formulario si existe
+  const form = document.getElementById('pedidoForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await crearPedido(new FormData(form));
+    });
+  }
+  
+  // Configurar búsqueda si existe
+  const searchInput = document.getElementById('search');
+  if (searchInput) {
+    searchInput.addEventListener('input', buscarPedidos);
+  }
+  
+  // Cargar pedidos iniciales
+  cargarPedidos();
+}
 
+/**
+ * Crear nuevo pedido
+ */
+async function crearPedido(formData) {
+  try {
+    const data = Object.fromEntries(formData);
+    
+    // Validación básica
+    if (!data.telefono && !data.mail) {
+      mostrarAlerta("Ingresá al menos teléfono o mail", "warning");
+      return;
+    }
+    
+    const response = await fetch(`${CONFIG.API_BASE_URL}/pedidos`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+    
+    if (handleAuthError(response)) return;
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al crear pedido');
+    }
+    
+    mostrarAlerta('Orden creada exitosamente', 'success');
+    document.getElementById('pedidoForm').reset();
+    cargarPedidos();
+  } catch (error) {
+    mostrarAlerta('Error al crear orden: ' + error.message, 'danger');
+  }
+}
 
-cargarPedidos();
+// ==========================================
+// EVENT LISTENERS
+// ==========================================
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', inicializarApp);
+
+// Hacer funciones globales para uso en HTML
+window.cerrarSesion = cerrarSesion;
+window.marcarReparado = marcarReparado;
+window.confirmarReparado = confirmarReparado;
+window.marcarRetirado = marcarRetirado;
+window.eliminarPedido = eliminarPedido;
+window.buscarPedidos = buscarPedidos;
+window.exportarExcel = exportarExcel;
