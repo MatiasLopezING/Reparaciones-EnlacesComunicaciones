@@ -12,14 +12,14 @@
 
 ## 🌟 Características Principales
 
-- **🔐 Autenticación JWT** - Login seguro con token persistente
-- **📱 Responsive Design** - Compatible con móviles y tablets  
-- **🚀 Sistema de Estados** - Flujo simple: Pendiente → Reparado → Retirado
-- **💰 Gestión de Costos** - Modal para registrar costo final y notas técnicas
-- **🔍 Búsqueda en Tiempo Real** - Filtra por cliente, equipo, teléfono, etc.
-- **📊 Exportación Excel** - Descarga reportes completos con un clic
+- **🔐 Autenticación Segura** - Login JWT con credenciales protegidas
+- **📱 Diseño Responsive** - Compatible con móviles y tablets  
+- **🚀 Gestión de Estados** - Flujo: Pendiente → Reparado → Retirado
+- **💰 Control de Costos** - Modal para registrar precio final y notas
+- **🔍 Búsqueda Inteligente** - Filtra por cliente, equipo, teléfono, etc.
+- **📊 Reportes Excel** - Exportación completa con un clic
 - **🛡️ Seguridad Avanzada** - Rate limiting, CSP, headers seguros
-- **☁️ Base de Datos Cloud** - PostgreSQL en Neon (sin SQLite local)
+- **☁️ Base de Datos Cloud** - PostgreSQL con SSL en producción
 
 ---
 
@@ -79,14 +79,21 @@ NODE_ENV=production
 
 ## 📱 Capturas de Pantalla
 
-### Formulario de Órdenes
+### 🔐 Sistema de Login
+![Login](screenshots/login.PNG)
+*Sistema de autenticación JWT con credenciales seguras*
+
+### 📝 Formulario de Órdenes
 ![Formulario](screenshots/formulario.PNG)
+*Interfaz intuitiva para crear nuevas órdenes de reparación*
 
-### Tabla de Gestión
-![Tabla](screenshots/tabla.PNG)
+### 📋 Vista de Orden Individual
+![Orden](screenshots/orden_de_reparacion.PNG)
+*Detalle completo de una orden con estados y acciones*
 
-### Exportación Excel
+### 📊 Exportación de Reportes
 ![Excel](screenshots/export_excel.PNG)
+*Descarga de reportes completos en formato Excel*
 
 ---
 
