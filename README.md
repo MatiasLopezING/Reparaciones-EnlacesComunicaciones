@@ -1,6 +1,6 @@
-# 🔧 Enlaces Comunicaciones - Sistema de Gestión de Reparaciones
+# 🔧 Sistema de Gestión de Reparaciones
 
-![Logo Enlaces](public/img/logo_enlaces-192.png)
+![Logo](public/img/logo_enlaces-192.png)
 
 **Sistema Web Profesional para gestionar órdenes de reparación con autenticación JWT, base de datos PostgreSQL y seguridad avanzada.**
 
@@ -39,20 +39,20 @@
 - **CORS** configurado
 
 ### Base de Datos
-- **PostgreSQL** en Neon Cloud
+- **PostgreSQL** en producción
 - **Migrations** automáticas al iniciar
 - **Conexión SSL** para producción
 
 ---
 
-## 🚀 Deploy en Render
+## 🚀 Deploy 
 
 ### Variables de Entorno Requeridas
 
-Configura estas variables en Render:
+Configura estas variables en tu servicio de hosting:
 
 ```bash
-# Base de datos (Neon PostgreSQL)
+# Base de datos PostgreSQL
 DATABASE_URL=postgresql://user:password@host:5432/database?sslmode=require
 
 # Autenticación
@@ -65,9 +65,9 @@ PORT=3000
 NODE_ENV=production
 ```
 
-### Configuración en Render
+### Configuración General
 
-1. **Conecta tu repositorio GitHub**
+1. **Conecta tu repositorio**
 2. **Configura el servicio:**
    - Build Command: `npm install`
    - Start Command: `npm start`
@@ -95,8 +95,8 @@ NODE_ENV=production
 ### 1. Clonar repositorio
 
 ```bash
-git clone https://github.com/MatiasLopezING/Reparaciones-EnlacesComunicaciones.git
-cd Reparaciones-EnlacesComunicaciones
+git clone https://github.com/TuUsuario/sistema-reparaciones.git
+cd sistema-reparaciones
 ```
 
 ### 2. Instalar dependencias
@@ -110,7 +110,7 @@ npm install
 Crea un archivo `.env`:
 
 ```bash
-# Base de datos PostgreSQL (Neon)
+# Base de datos PostgreSQL
 DATABASE_URL=tu_connection_string_postgresql
 
 # JWT y autenticación  
@@ -138,7 +138,7 @@ http://localhost:3000/login.html
 
 **Credenciales por defecto:**
 - Usuario: `admin`
-- Contraseña: `enlaces2025`
+- Contraseña: `password123`
 
 ---
 
@@ -206,13 +206,13 @@ npm run verify-db   # Verificar base de datos
 
 ---
 
-## 🌍 Demo en Vivo
+## 🌍 Demo
 
-🔗 **[Ver Demo](https://tu-app.onrender.com)**
+🔗 **[Ver Demo en Vivo](https://tu-proyecto.onrender.com)**
 
 **Credenciales de prueba:**
 - Usuario: `admin` 
-- Contraseña: `enlaces2025`
+- Contraseña: `password123`
 
 ---
 
@@ -225,8 +225,8 @@ Este proyecto está bajo la licencia **MIT**. Ver [LICENSE](LICENSE) para más d
 ## ✍️ Autor
 
 **Matías López**  
-🎓 Ingeniería en Computación, UNLP  
-🏢 Enlaces Comunicaciones  
+🎓 Ingeniero en Computación, UNLP  
+💻 Full Stack Developer  
 📧 [Contacto](mailto:tu@email.com)
 
 ---
@@ -245,4 +245,4 @@ Este proyecto está bajo la licencia **MIT**. Ver [LICENSE](LICENSE) para más d
 
 ¿Te gustó el proyecto? ¡Dale una estrella en GitHub!
 
-[![GitHub stars](https://img.shields.io/github/stars/MatiasLopezING/Reparaciones-EnlacesComunicaciones.svg?style=social&label=Star)](https://github.com/MatiasLopezING/Reparaciones-EnlacesComunicaciones)
+[![GitHub stars](https://img.shields.io/github/stars/TuUsuario/sistema-reparaciones.svg?style=social&label=Star)](https://github.com/TuUsuario/sistema-reparaciones)
