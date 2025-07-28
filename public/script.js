@@ -288,6 +288,15 @@ function generateActionButtons(pedido) {
     `;
   }
   
+  // Botón de editar (costo y nota técnica) - disponible para pendientes y reparados
+  if (pedido.estado === 'pendiente' || pedido.estado === 'reparado') {
+    buttons += `
+      <button class="btn btn-outline-warning btn-sm me-1" onclick="editarPedido(${pedido.id})" title="Editar costo y nota técnica">
+        <i class="bi bi-pencil"></i>
+      </button>
+    `;
+  }
+  
   // Botón de eliminar siempre disponible
   buttons += `
     <button class="btn btn-outline-danger btn-sm" onclick="eliminarPedido(${pedido.id})" title="Eliminar pedido">
@@ -324,7 +333,7 @@ async function confirmarReparado() {
   
   // Validar campos requeridos
   if (!costoFinal || !notaTecnica) {
-    mostrarToast('Por favor complete todos los campos', 'warning');
+    mostrarAlerta('Por favor complete todos los campos', 'warning');
     return;
   }
   
@@ -340,10 +349,10 @@ async function confirmarReparado() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('modalReparado'));
     modal.hide();
     
-    mostrarToast('Equipo marcado como reparado exitosamente', 'success');
+    mostrarAlerta('Equipo marcado como reparado exitosamente', 'success');
   } catch (error) {
     console.error('Error al marcar como reparado:', error);
-    mostrarToast('Error al procesar la reparación', 'error');
+    mostrarAlerta('Error al procesar la reparación', 'danger');
   }
 }
 
@@ -390,7 +399,7 @@ async function confirmarRetirado() {
     
     // Validar datos
     if (!esMismoDueno && !retiradoPor) {
-      mostrarToast('Por favor complete quién retiró el equipo', 'error');
+      mostrarAlerta('Por favor complete quién retiró el equipo', 'danger');
       return;
     }
     
@@ -407,10 +416,92 @@ async function confirmarRetirado() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('modalRetirado'));
     modal.hide();
     
-    mostrarToast('Equipo marcado como retirado exitosamente', 'success');
+    mostrarAlerta('Equipo marcado como retirado exitosamente', 'success');
   } catch (error) {
     console.error('Error al marcar como retirado:', error);
-    mostrarToast('Error al procesar el retiro', 'error');
+    mostrarAlerta('Error al procesar el retiro', 'danger');
+  }
+}
+
+/**
+ * Editar pedido - Abre modal para editar costo y nota técnica
+ */
+async function editarPedido(id) {
+  try {
+    // Obtener datos actuales del pedido
+    const response = await fetch(`${CONFIG.API_BASE_URL}/pedidos`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (handleAuthError(response)) return;
+    
+    if (!response.ok) {
+      throw new Error('Error al cargar datos del pedido');
+    }
+    
+    const pedidos = await response.json();
+    const pedido = pedidos.find(p => p.id === id);
+    
+    if (!pedido) {
+      mostrarAlerta('Pedido no encontrado', 'danger');
+      return;
+    }
+    
+    // Llenar el modal con los datos actuales
+    document.getElementById('pedidoIdEditar').value = id;
+    document.getElementById('costoEditar').value = pedido.costo_estimado || '';
+    document.getElementById('notaEditar').value = pedido.nota_tecnica || '';
+    
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('modalEditar'));
+    modal.show();
+  } catch (error) {
+    console.error('Error al cargar datos para editar:', error);
+    mostrarAlerta('Error al cargar datos del pedido', 'danger');
+  }
+}
+
+/**
+ * Confirmar edición desde modal
+ */
+async function confirmarEdicion() {
+  const id = document.getElementById('pedidoIdEditar').value;
+  const costoEditar = document.getElementById('costoEditar').value;
+  const notaEditar = document.getElementById('notaEditar').value;
+  
+  // Validar campos requeridos
+  if (!costoEditar || !notaEditar) {
+    mostrarAlerta('Por favor complete todos los campos', 'warning');
+    return;
+  }
+  
+  try {
+    // Actualizar el pedido con los nuevos datos
+    const response = await fetch(`${CONFIG.API_BASE_URL}/pedidos/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        costo_estimado: parseFloat(costoEditar),
+        nota_tecnica: notaEditar
+      })
+    });
+    
+    if (handleAuthError(response)) return;
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error en el servidor');
+    }
+    
+    // Cerrar el modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
+    modal.hide();
+    
+    mostrarAlerta('Datos actualizados exitosamente', 'success');
+    cargarPedidos();
+  } catch (error) {
+    console.error('Error al actualizar:', error);
+    mostrarAlerta('Error al actualizar los datos', 'danger');
   }
 }
 
@@ -701,6 +792,8 @@ window.confirmarReparado = confirmarReparado;
 window.marcarRetirado = marcarRetirado;
 window.toggleRetiroPor = toggleRetiroPor;
 window.confirmarRetirado = confirmarRetirado;
+window.editarPedido = editarPedido;
+window.confirmarEdicion = confirmarEdicion;
 window.eliminarPedido = eliminarPedido;
 window.buscarPedidos = buscarPedidos;
 window.exportarExcel = exportarExcel;
