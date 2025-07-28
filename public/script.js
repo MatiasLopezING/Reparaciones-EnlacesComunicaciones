@@ -178,7 +178,7 @@ function cargarTabla(pedidos) {
   if (pedidos.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="9" class="text-center text-muted">
+        <td colspan="12" class="text-center text-muted">
           No hay órdenes registradas
         </td>
       </tr>
@@ -200,6 +200,12 @@ function cargarTabla(pedidos) {
         </span>
       </td>
       <td>$${pedido.costo_estimado || '0'}</td>
+      <td class="text-wrap" style="max-width: 200px; font-size: 0.9em;">
+        ${pedido.nota_tecnica ? 
+          `<span class="text-muted" title="${pedido.nota_tecnica}">${pedido.nota_tecnica.length > 50 ? pedido.nota_tecnica.substring(0, 50) + '...' : pedido.nota_tecnica}</span>` 
+          : '<span class="text-muted">-</span>'
+        }
+      </td>
       <td class="text-center">
         ${generateActionButtons(pedido)}
       </td>

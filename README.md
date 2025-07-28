@@ -215,7 +215,11 @@ npm run verify-db   # Verificar base de datos
 
 ## 🌍 Demo
 
+<<<<<<< HEAD
 🔗 **[Ver Demo en Vivo](https://reparaciones-enlacescomunicaciones.onrender.com)**
+=======
+🔗 **[Ver Demo en Vivo]([https://reparaciones-enlacescomunicaciones.onrender.com])**
+>>>>>>> 9d78fecd86a7785a363d78eafe81c6e0b670aa24
 
 **Credenciales de prueba:**
 - Usuario: `admin` 
