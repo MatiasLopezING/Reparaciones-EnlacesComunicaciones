@@ -313,12 +313,70 @@ async function confirmarReparado() {
 }
 
 /**
- * Marcar pedido como retirado
+ * Marcar pedido como retirado - Abre modal
  */
-async function marcarRetirado(id) {
-  await actualizarEstadoPedido(id, 'retirado', {
-    fecha_retiro: fechaActualArgentina()
-  });
+function marcarRetirado(id) {
+  document.getElementById('pedidoIdRetirado').value = id;
+  document.getElementById('esMismoDueno').checked = false;
+  document.getElementById('retiradoPor').value = '';
+  document.getElementById('retiradoPor').required = true;
+  document.getElementById('campoRetiroPor').style.display = 'block';
+  
+  const modal = new bootstrap.Modal(document.getElementById('modalRetirado'));
+  modal.show();
+}
+
+/**
+ * Alternar campo de retiro según checkbox
+ */
+function toggleRetiroPor() {
+  const checkbox = document.getElementById('esMismoDueno');
+  const campo = document.getElementById('campoRetiroPor');
+  const input = document.getElementById('retiradoPor');
+  
+  if (checkbox.checked) {
+    campo.style.display = 'none';
+    input.required = false;
+    input.value = '';
+  } else {
+    campo.style.display = 'block';
+    input.required = true;
+  }
+}
+
+/**
+ * Confirmar retiro desde modal
+ */
+async function confirmarRetirado() {
+  try {
+    const pedidoId = document.getElementById('pedidoIdRetirado').value;
+    const esMismoDueno = document.getElementById('esMismoDueno').checked;
+    const retiradoPor = document.getElementById('retiradoPor').value.trim();
+    
+    // Validar datos
+    if (!esMismoDueno && !retiradoPor) {
+      mostrarToast('Por favor complete quién retiró el equipo', 'error');
+      return;
+    }
+    
+    // Preparar datos para enviar
+    const datosRetiro = {
+      fecha_retiro: fechaActualArgentina(),
+      es_mismo_dueno: esMismoDueno,
+      retirado_por: esMismoDueno ? null : retiradoPor
+    };
+    
+    await actualizarEstadoPedido(pedidoId, 'retirado', datosRetiro);
+    
+    // Cerrar el modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalRetirado'));
+    modal.hide();
+    
+    mostrarToast('Equipo marcado como retirado exitosamente', 'success');
+  } catch (error) {
+    console.error('Error al marcar como retirado:', error);
+    mostrarToast('Error al procesar el retiro', 'error');
+  }
 }
 
 /**
@@ -532,6 +590,8 @@ window.cerrarSesion = cerrarSesion;
 window.marcarReparado = marcarReparado;
 window.confirmarReparado = confirmarReparado;
 window.marcarRetirado = marcarRetirado;
+window.toggleRetiroPor = toggleRetiroPor;
+window.confirmarRetirado = confirmarRetirado;
 window.eliminarPedido = eliminarPedido;
 window.buscarPedidos = buscarPedidos;
 window.exportarExcel = exportarExcel;

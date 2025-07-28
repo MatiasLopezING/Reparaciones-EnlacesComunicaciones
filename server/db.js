@@ -27,6 +27,8 @@ const initializeDatabase = async () => {
         accesorios TEXT,
         telefono TEXT,
         mail TEXT,
+        retirado_por TEXT,
+        es_mismo_dueno BOOLEAN DEFAULT false,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
