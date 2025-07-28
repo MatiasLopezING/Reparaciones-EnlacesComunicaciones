@@ -185,7 +185,7 @@ function cargarTabla(pedidos) {
   if (pedidos.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="12" class="text-center text-muted">
+        <td colspan="13" class="text-center text-muted">
           No hay órdenes registradas
         </td>
       </tr>
@@ -213,6 +213,9 @@ function cargarTabla(pedidos) {
           : '<span class="text-muted">-</span>'
         }
       </td>
+      <td class="text-wrap" style="max-width: 150px; font-size: 0.9em;">
+        ${getRetiradoPorText(pedido)}
+      </td>
       <td class="text-center">
         ${generateActionButtons(pedido)}
       </td>
@@ -222,6 +225,31 @@ function cargarTabla(pedidos) {
     `;
     tbody.appendChild(row);
   });
+}
+
+/**
+ * Obtener texto para mostrar quién retiró el equipo
+ */
+function getRetiradoPorText(pedido) {
+  // Si no está retirado, mostrar guión
+  if (pedido.estado !== 'retirado') {
+    return '<span class="text-muted">-</span>';
+  }
+  
+  // Si lo retiró el mismo dueño
+  if (pedido.es_mismo_dueno) {
+    return '<span class="text-success"><i class="bi bi-person-check me-1"></i>Mismo dueño</span>';
+  }
+  
+  // Si lo retiró otra persona
+  if (pedido.retirado_por) {
+    return `<span class="text-info" title="${pedido.retirado_por}">
+      <i class="bi bi-person me-1"></i>${pedido.retirado_por.length > 20 ? pedido.retirado_por.substring(0, 20) + '...' : pedido.retirado_por}
+    </span>`;
+  }
+  
+  // Fallback para datos antiguos
+  return '<span class="text-muted">Sin info</span>';
 }
 
 /**
@@ -499,6 +527,7 @@ function exportarExcel() {
         Estado: p.estado,
         Costo: p.costo_estimado,
         Nota_Técnica: p.nota_tecnica,
+        Retirado_Por: p.es_mismo_dueno ? 'Mismo dueño' : (p.retirado_por || '-'),
         Accesorios: p.accesorios,
         Fecha_Ingreso: formatearFecha(p.fecha_ingreso),
         Fecha_Reparado: formatearFecha(p.fecha_reparado),
