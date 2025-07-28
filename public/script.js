@@ -17,8 +17,12 @@ const CONFIG = {
   API_BASE_URL: '/api',
   TOKEN_KEY: 'authToken',
   USER_KEY: 'userInfo',
-  TIMEZONE: 'America/Argentina/Buenos_Aires'
+  TIMEZONE: 'America/Argentina/Buenos_Aires',
+  AUTO_REFRESH_INTERVAL: 10000 // 10 segundos
 };
+
+// Variable para controlar el intervalo de auto-refresh
+let autoRefreshInterval = null;
 
 /**
  * Verificar autenticación al cargar la página
@@ -161,6 +165,9 @@ async function cargarPedidos() {
     
     const pedidos = await response.json();
     cargarTabla(pedidos);
+    
+    // Actualizar timestamp de última actualización
+    actualizarTimestampRefresh();
   } catch (error) {
     mostrarAlerta('Error al cargar las órdenes: ' + error.message, 'danger');
   }
@@ -512,6 +519,67 @@ function exportarExcel() {
 }
 
 // ==========================================
+// AUTO-REFRESH SYSTEM
+// ==========================================
+
+/**
+ * Iniciar auto-refresh
+ */
+function iniciarAutoRefresh() {
+  // Limpiar cualquier intervalo existente
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+  
+  // Configurar nuevo intervalo
+  autoRefreshInterval = setInterval(() => {
+    console.log('🔄 Auto-refresh: Actualizando datos...');
+    cargarPedidos();
+  }, CONFIG.AUTO_REFRESH_INTERVAL);
+  
+  console.log('✅ Auto-refresh iniciado cada', CONFIG.AUTO_REFRESH_INTERVAL / 1000, 'segundos');
+}
+
+/**
+ * Detener auto-refresh
+ */
+function detenerAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+    console.log('⏹️ Auto-refresh detenido');
+  }
+}
+
+/**
+ * Actualizar timestamp de última actualización
+ */
+function actualizarTimestampRefresh() {
+  const ahora = new Date().toLocaleTimeString('es-AR', {
+    timeZone: CONFIG.TIMEZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  
+  // Agregar indicador visual si no existe
+  let indicator = document.getElementById('refreshIndicator');
+  if (!indicator) {
+    const header = document.querySelector('.card-header .col-md-6 h2');
+    if (header) {
+      indicator = document.createElement('small');
+      indicator.id = 'refreshIndicator';
+      indicator.className = 'text-muted ms-2';
+      header.parentNode.appendChild(indicator);
+    }
+  }
+  
+  if (indicator) {
+    indicator.innerHTML = `<i class="bi bi-arrow-clockwise me-1"></i>Última actualización: ${ahora}`;
+  }
+}
+
+// ==========================================
 // INICIALIZACIÓN
 // ==========================================
 
@@ -542,6 +610,18 @@ function inicializarApp() {
   
   // Cargar pedidos iniciales
   cargarPedidos();
+  
+  // Iniciar auto-refresh
+  iniciarAutoRefresh();
+  
+  // Detener auto-refresh cuando la página se oculta
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      detenerAutoRefresh();
+    } else {
+      iniciarAutoRefresh();
+    }
+  });
 }
 
 /**
