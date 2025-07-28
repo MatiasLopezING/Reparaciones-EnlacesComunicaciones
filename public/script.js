@@ -469,21 +469,33 @@ async function confirmarEdicion() {
   const costoEditar = document.getElementById('costoEditar').value;
   const notaEditar = document.getElementById('notaEditar').value;
   
-  // Validar campos requeridos
-  if (!costoEditar || !notaEditar) {
-    mostrarAlerta('Por favor complete todos los campos', 'warning');
-    return;
+  // Permitir guardar incluso con campos vacíos (para limpiar datos)
+  if (!costoEditar && !notaEditar) {
+    const confirmar = confirm('¿Estás seguro que querés guardar con ambos campos vacíos? Esto limpiará los datos existentes.');
+    if (!confirmar) {
+      return;
+    }
   }
   
   try {
+    // Preparar datos para enviar (incluir campos vacíos para permitir limpiarlos)
+    const datosActualizar = {};
+    
+    // Siempre incluir costo_estimado (puede ser vacío para limpiar)
+    if (costoEditar !== '') {
+      datosActualizar.costo_estimado = parseFloat(costoEditar);
+    } else {
+      datosActualizar.costo_estimado = null; // Limpiar el campo
+    }
+    
+    // Siempre incluir nota_tecnica (puede ser vacía para limpiar)
+    datosActualizar.nota_tecnica = notaEditar; // Puede ser cadena vacía
+    
     // Actualizar el pedido con los nuevos datos
     const response = await fetch(`${CONFIG.API_BASE_URL}/pedidos/${id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
-      body: JSON.stringify({
-        costo_estimado: parseFloat(costoEditar),
-        nota_tecnica: notaEditar
-      })
+      body: JSON.stringify(datosActualizar)
     });
     
     if (handleAuthError(response)) return;
@@ -653,11 +665,8 @@ function iniciarAutoRefresh() {
   
   // Configurar nuevo intervalo
   autoRefreshInterval = setInterval(() => {
-    console.log('🔄 Auto-refresh: Actualizando datos...');
     cargarPedidos();
   }, CONFIG.AUTO_REFRESH_INTERVAL);
-  
-  console.log('✅ Auto-refresh iniciado cada', CONFIG.AUTO_REFRESH_INTERVAL / 1000, 'segundos');
 }
 
 /**
@@ -667,7 +676,6 @@ function detenerAutoRefresh() {
   if (autoRefreshInterval) {
     clearInterval(autoRefreshInterval);
     autoRefreshInterval = null;
-    console.log('⏹️ Auto-refresh detenido');
   }
 }
 

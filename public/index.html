@@ -360,7 +360,7 @@
         <div class="modal-body">
           <div class="alert alert-warning" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i>
-            Modifica el costo final y la nota técnica
+            Modifica el costo final y/o la nota técnica. Dejá campos vacíos para limpiar datos existentes.
           </div>
           
           <form id="formEditar">
@@ -376,8 +376,7 @@
                      name="costo_estimado" 
                      placeholder="0.00" 
                      step="0.01" 
-                     min="0"
-                     required>
+                     min="0">
             </div>
             
             <div class="mb-3">
@@ -388,8 +387,7 @@
                         id="notaEditar"
                         name="nota_tecnica" 
                         rows="4" 
-                        placeholder="Describe el trabajo realizado, repuestos utilizados, observaciones..."
-                        required></textarea>
+                        placeholder="Describe el trabajo realizado, repuestos utilizados, observaciones..."></textarea>
             </div>
           </form>
         </div>
