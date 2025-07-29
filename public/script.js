@@ -166,6 +166,9 @@ async function cargarPedidos() {
     const pedidos = await response.json();
     cargarTabla(pedidos);
     
+    // Cachear pedidos para uso en modales
+    sessionStorage.setItem('pedidosCache', JSON.stringify(pedidos));
+    
     // Actualizar timestamp de última actualización
     actualizarTimestampRefresh();
   } catch (error) {
@@ -392,17 +395,17 @@ function toggleRetiroPor() {
  * Confirmar retiro desde modal
  */
 async function confirmarRetirado() {
+  const pedidoId = document.getElementById('pedidoIdRetirado').value;
+  const esMismoDueno = document.getElementById('esMismoDueno').checked;
+  const retiradoPor = document.getElementById('retiradoPor').value.trim();
+  
+  // Validación simplificada
+  if (!esMismoDueno && retiradoPor === '') {
+    alert('Por favor ingresá el nombre de quien retiró el equipo');
+    return;
+  }
+  
   try {
-    const pedidoId = document.getElementById('pedidoIdRetirado').value;
-    const esMismoDueno = document.getElementById('esMismoDueno').checked;
-    const retiradoPor = document.getElementById('retiradoPor').value.trim();
-    
-    // Validar datos
-    if (!esMismoDueno && !retiradoPor) {
-      mostrarAlerta('Por favor complete quién retiró el equipo', 'danger');
-      return;
-    }
-    
     // Preparar datos para enviar
     const datosRetiro = {
       fecha_retiro: fechaActualArgentina(),
@@ -414,12 +417,18 @@ async function confirmarRetirado() {
     
     // Cerrar el modal
     const modal = bootstrap.Modal.getInstance(document.getElementById('modalRetirado'));
-    modal.hide();
+    if (modal) {
+      modal.hide();
+    }
     
-    mostrarAlerta('Equipo marcado como retirado exitosamente', 'success');
+    const mensajeExito = esMismoDueno 
+      ? 'Equipo marcado como retirado por el mismo dueño'
+      : `Equipo marcado como retirado por: ${retiradoPor}`;
+    
+    mostrarAlerta(mensajeExito, 'success');
   } catch (error) {
     console.error('Error al marcar como retirado:', error);
-    mostrarAlerta('Error al procesar el retiro', 'danger');
+    mostrarAlerta('Error al procesar el retiro: ' + error.message, 'danger');
   }
 }
 
@@ -543,6 +552,7 @@ async function actualizarEstadoPedido(id, nuevoEstado, camposAdicionales = {}) {
     mostrarAlerta(`Orden marcada como ${nuevoEstado}`, 'success');
     cargarPedidos();
   } catch (error) {
+    console.error('Error en actualizarEstadoPedido:', error);
     mostrarAlerta(`Error al actualizar: ${error.message}`, 'danger');
   }
 }
