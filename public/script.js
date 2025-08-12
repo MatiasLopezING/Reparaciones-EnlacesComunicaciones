@@ -18,11 +18,12 @@ const CONFIG = {
   TOKEN_KEY: 'authToken',
   USER_KEY: 'userInfo',
   TIMEZONE: 'America/Argentina/Buenos_Aires',
-  AUTO_REFRESH_INTERVAL: 10000 // 10 segundos
+  AUTO_REFRESH_INTERVAL: 5000 // 5 segundos
 };
 
-// Variable para controlar el intervalo de auto-refresh
+// Variables para controlar el intervalo de auto-refresh
 let autoRefreshInterval = null;
+let searchActive = false;
 
 /**
  * Verificar autenticación al cargar la página
@@ -83,12 +84,18 @@ function formatearFecha(fechaString) {
  * Obtener fecha actual en formato argentino
  */
 function fechaActualArgentina() {
-  return new Date().toLocaleDateString('es-AR', {
-    timeZone: CONFIG.TIMEZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).split('/').reverse().join('-');
+  const ahora = new Date();
+  // Ajustar a timezone de Argentina
+  const fechaArgentina = new Date(ahora.toLocaleString("en-US", {timeZone: CONFIG.TIMEZONE}));
+  
+  const year = fechaArgentina.getFullYear();
+  const month = String(fechaArgentina.getMonth() + 1).padStart(2, '0');
+  const day = String(fechaArgentina.getDate()).padStart(2, '0');
+  
+  const fechaFormateada = `${year}-${month}-${day}`;
+  console.log('📅 Fecha Argentina generada:', fechaFormateada);
+  
+  return fechaFormateada;
 }
 
 /**
@@ -590,6 +597,16 @@ async function buscarPedidos() {
   if (!searchInput) return;
   
   const term = searchInput.value.trim();
+  
+  // Controlar auto-refresh según si hay búsqueda activa
+  if (term) {
+    searchActive = true;
+    detenerAutoRefresh();
+  } else {
+    searchActive = false;
+    iniciarAutoRefresh();
+  }
+  
   const url = term 
     ? `${CONFIG.API_BASE_URL}/buscar?term=${encodeURIComponent(term)}`
     : `${CONFIG.API_BASE_URL}/pedidos`;
@@ -607,6 +624,11 @@ async function buscarPedidos() {
     
     const pedidos = await response.json();
     cargarTabla(pedidos);
+    
+    // Cachear pedidos para uso en modales solo si no es búsqueda
+    if (!term) {
+      sessionStorage.setItem('pedidosCache', JSON.stringify(pedidos));
+    }
   } catch (error) {
     mostrarAlerta('Error al buscar: ' + error.message, 'danger');
   }
@@ -668,6 +690,11 @@ function exportarExcel() {
  * Iniciar auto-refresh
  */
 function iniciarAutoRefresh() {
+  // No iniciar auto-refresh si hay búsqueda activa
+  if (searchActive) {
+    return;
+  }
+  
   // Limpiar cualquier intervalo existente
   if (autoRefreshInterval) {
     clearInterval(autoRefreshInterval);
@@ -675,7 +702,10 @@ function iniciarAutoRefresh() {
   
   // Configurar nuevo intervalo
   autoRefreshInterval = setInterval(() => {
-    cargarPedidos();
+    // No ejecutar si hay búsqueda activa
+    if (!searchActive) {
+      cargarPedidos();
+    }
   }, CONFIG.AUTO_REFRESH_INTERVAL);
 }
 
