@@ -92,10 +92,7 @@ function fechaActualArgentina() {
   const month = String(fechaArgentina.getMonth() + 1).padStart(2, '0');
   const day = String(fechaArgentina.getDate()).padStart(2, '0');
   
-  const fechaFormateada = `${year}-${month}-${day}`;
-  console.log('📅 Fecha Argentina generada:', fechaFormateada);
-  
-  return fechaFormateada;
+  return `${year}-${month}-${day}`;
 }
 
 /**
